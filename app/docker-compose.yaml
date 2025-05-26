@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  nginx:
+    build:
+      context: .
+    container_name: nginx-dynamic
+    ports:
+      - "80:80"
+    volumes:
+      - ./index-${CLOUD}.html:/usr/share/nginx/html/index.html
+    restart: always
+    environment:
+      - CLOUD=${CLOUD}
