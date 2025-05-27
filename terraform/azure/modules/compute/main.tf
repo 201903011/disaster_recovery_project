@@ -9,6 +9,21 @@ resource "azurerm_network_interface" "vm_nic" {
     subnet_id                     = var.subnet_id
     private_ip_address_allocation = "Dynamic"
   }
+
+
+}
+
+resource "azurerm_network_interface_backend_address_pool_association" "nic_lb_assoc" {
+  count                   = 2
+  network_interface_id    = azurerm_network_interface.vm_nic[count.index].id
+  ip_configuration_name   = "internal"
+  backend_address_pool_id = var.lb_backend_pool_id
+}
+
+resource "azurerm_network_interface_security_group_association" "nsg" {
+  count                     = 2
+  network_interface_id      = azurerm_network_interface.vm_nic[count.index].id
+  network_security_group_id = var.nsg_id
 }
 
 resource "azurerm_linux_virtual_machine" "vm" {

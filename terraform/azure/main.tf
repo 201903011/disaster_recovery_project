@@ -42,12 +42,15 @@ module "compute" {
   location            = module.rg.location
   subnet_id           = module.network.subnet_id
   lb_backend_pool_id  = module.lb.backend_pool_id
+  nsg_id              = module.network.nsg_id
 }
 
 module "bastion" {
-  source       = "./modules/bastion"
-  bastion_cidr = "20.0.2.0/27"
-  vnet         = module.network.vnet_name
+  source              = "./modules/bastion"
+  bastion_cidr        = "20.0.2.0/27"
+  vnet                = module.network.vnet_name
+  resource_group_name = module.rg.name
+  location            = module.rg.location
 }
 
 module "gateway" {
