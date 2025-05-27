@@ -1,0 +1,29 @@
+---
+- name: Install Docker Compose
+  hosts: all
+  become: yes
+
+  vars:
+    docker_compose_version: "2.24.6" # Replace with latest if needed
+    docker_compose_path: "/usr/local/bin/docker-compose"
+
+  tasks:
+    - name: Ensure curl is installed
+      apt:
+        name: curl
+        state: present
+        update_cache: yes
+
+    - name: Download Docker Compose binary
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-$(uname -s)-$(uname -m)"
+        dest: "{{ docker_compose_path }}"
+        mode: "0755"
+
+    - name: Verify docker-compose installation
+      command: docker-compose --version
+      register: compose_version
+
+    - name: Show Docker Compose version
+      debug:
+        msg: "Installed Docker Compose version: {{ compose_version.stdout }}"
