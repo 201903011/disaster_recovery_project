@@ -22,6 +22,7 @@ pipeline {
                             git reset --hard origin/\$(git rev-parse --abbrev-ref HEAD)
                             git pull -X theirs origin \$(git rev-parse --abbrev-ref HEAD)
 
+
                             cd ${env.ANSIBLE_DIR}
                             ansible-playbook -i inventory.ini deploy.yaml
                     """
