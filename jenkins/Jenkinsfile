@@ -2,68 +2,32 @@ pipeline {
     agent any
 
     environment {
-        ECR_REGISTRY = '897540928180.dkr.ecr.us-east-1.amazonaws.com'
-        ECR_REPOSITORY = 'node-app'
-        IMAGE_TAG = "${env.BUILD_ID}"
-        APP_HOST = '10.0.4.112'
+        // Replace with your actual values
+        ANSIBLE_HOST = 'user@ansible-machine-ip-or-hostname'
+        PROJECT_DIR = '~/disaster_recovery_project'
+        ANSIBLE_DIR = '~/disaster_recovery_project/ansible'
+        SSH_KEY = credentials('rg12.pem') // Add this SSH key in Jenkins credentials
     }
 
     stages {
-        stage('Checkout') {
+        stage('Deploy via Ansible') {
             steps {
-                echo 'Cloning the repository...'
-                git branch: 'master', 
-                    credentialsId: 'e61abb13-5825-4ba1-abfe-464dfb4210a2', 
-                    url: 'git@github.com:201903011/rahul_master_devops.git'
-            }
-        }
+                sshagent (credentials: ['rg12.pem']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no \$ANSIBLE_HOST << 'ENDSSH'
+                    set -e
+                    cd \$PROJECT_DIR
 
-        stage('Build and Push Docker Image') {
-            steps {
-                script {
-                    echo 'Building Docker Image...'
-                    sh '''
-                    cd app
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_REGISTRY}
-                    docker build -t ${ECR_REPOSITORY}:${IMAGE_TAG} .
-                    docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
-                    docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
-                    '''
+                    git fetch --all
+                    git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+                    git pull -X theirs origin $(git rev-parse --abbrev-ref HEAD)
+
+                    cd \$ANSIBLE_DIR
+                    ansible-playbook -i inventory.ini deploy.yaml
+                    ENDSSH
+                    """
                 }
             }
-        }
-
-        stage('Deploy to App Host') {
-            steps {
-                script {
-                    echo 'Deploying to App Host...'
-                    withCredentials([file(credentialsId: '3efe91f3-5153-4202-8fbe-72a9d961b70d', variable: 'PEM_FILE')]) {
-                        sh '''
-                        dir
-                        chmod 400 ${PEM_FILE}
-                        ssh -i ${PEM_FILE}  ubuntu@${APP_HOST} <<EOF
-                            dir
-                            aws ecr get-login-password --region us-east-1 |sudo docker login --username AWS --password-stdin ${ECR_REGISTRY}
-                            sudo docker stop $(sudo docker ps -q)
-                            sudo docker rm $(sudo docker ps -a -q)
-                            sudo docker pull  ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
-                            sudo docker run -itd -p 80:80 ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
-                            sudo docker ps
-                            exit
-                        EOF
-                        
-                        
-                        '''
-                    }
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            echo 'Cleaning up workspace...'
-            cleanWs()
         }
     }
 }
