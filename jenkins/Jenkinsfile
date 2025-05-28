@@ -24,7 +24,6 @@ pipeline {
 
                             cd ${env.ANSIBLE_DIR}
                             ansible-playbook -i inventory.ini deploy.yaml
-                        ENDSSH 
                     """
                 }
             }
