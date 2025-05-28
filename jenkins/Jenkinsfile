@@ -14,17 +14,8 @@ pipeline {
                     sh """
                         dir
                         chmod 400 ${PEM_FILE}
-                        ssh -i ${PEM_FILE} ${ANSIBLE_HOST} <<EOF 
-                     
-                            cd ${env.PROJECT_DIR}
-
-                            git fetch --all
-                            git reset --hard origin/\$(git rev-parse --abbrev-ref HEAD)
-                            git pull -X theirs origin \$(git rev-parse --abbrev-ref HEAD)
-
-                            cd ${env.ANSIBLE_DIR}
-                            ansible-playbook -i inventory.ini deploy.yaml
-                        ENDSSH
+                        
+                        EOF
                     """
                 }
             }
