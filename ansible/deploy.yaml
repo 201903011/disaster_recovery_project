@@ -3,12 +3,10 @@
   become: true
   tasks:
     - name: Ensure Docker is installed
-      apt:
-        command: sudo docker --version
+      command: sudo docker --version
 
     - name: Ensure Docker Compose is installed
-      apt:
-        command: sudo docker-compose --version
+      command: sudo docker-compose --version
 
     - name: Create application directory
       file:
@@ -41,12 +39,10 @@
   become: true
   tasks:
     - name: Ensure Docker is installed
-      apt:
-        command: sudo docker --version
+      command: sudo docker --version
 
     - name: Ensure Docker Compose is installed
-      apt:
-        command: sudo docker --version
+      command: sudo docker-compose --version
 
     - name: Create application directory
       file:
