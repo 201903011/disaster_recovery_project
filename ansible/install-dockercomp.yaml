@@ -2,9 +2,10 @@
 - name: Install Docker Compose
   hosts: all
   become: yes
+  gather_facts: yes
 
   vars:
-    docker_compose_version: "2.24.6" # Replace with latest if needed
+    docker_compose_version: "2.24.6"
     docker_compose_path: "/usr/local/bin/docker-compose"
 
   tasks:
@@ -14,9 +15,13 @@
         state: present
         update_cache: yes
 
+    - name: Set docker compose download URL
+      set_fact:
+        docker_compose_url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
+
     - name: Download Docker Compose binary
       get_url:
-        url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-$(uname -s)-$(uname -m)"
+        url: "{{ docker_compose_url }}"
         dest: "{{ docker_compose_path }}"
         mode: "0755"
 
