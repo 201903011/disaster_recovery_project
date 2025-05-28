@@ -10,18 +10,20 @@ pipeline {
     stages {
         stage('Deploy via Ansible') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'rg12.pem', keyFileVariable: 'KEYFILE', usernameVariable: 'SSHUSER')]) {
+                withCredentials([file(credentialsId: 'rg12.pem', variable: 'PEM_FILE')]) {
                     sh """
-                        ssh -i \$KEYFILE  ${env.ANSIBLE_HOST} << 'ENDSSH'
-                        set -e
-                        cd ${env.PROJECT_DIR}
+                        dir
+                        chmod 400 ${PEM_FILE}
+                        ssh -i ${PEM_FILE} ${ANSIBLE_HOST} <<EOF 
+                     
+                            cd ${env.PROJECT_DIR}
 
-                        git fetch --all
-                        git reset --hard origin/\$(git rev-parse --abbrev-ref HEAD)
-                        git pull -X theirs origin \$(git rev-parse --abbrev-ref HEAD)
+                            git fetch --all
+                            git reset --hard origin/\$(git rev-parse --abbrev-ref HEAD)
+                            git pull -X theirs origin \$(git rev-parse --abbrev-ref HEAD)
 
-                        cd ${env.ANSIBLE_DIR}
-                        ansible-playbook -i inventory.ini deploy.yaml
+                            cd ${env.ANSIBLE_DIR}
+                            ansible-playbook -i inventory.ini deploy.yaml
                         ENDSSH
                     """
                 }
