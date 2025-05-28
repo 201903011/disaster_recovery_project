@@ -14,7 +14,17 @@ pipeline {
                     sh """
                         dir
                         chmod 400 ${PEM_FILE}
-                        ssh -i ${PEM_FILE} -o StrictHostKeyChecking=no  ${ANSIBLE_HOST} 
+                        ssh -i ${PEM_FILE} -o StrictHostKeyChecking=no  ${ANSIBLE_HOST} << 'ENDSSH'
+                            set -e
+                            cd ${env.PROJECT_DIR}
+
+                            git fetch --all
+                            git reset --hard origin/\$(git rev-parse --abbrev-ref HEAD)
+                            git pull -X theirs origin \$(git rev-parse --abbrev-ref HEAD)
+
+                            cd ${env.ANSIBLE_DIR}
+                            ansible-playbook -i inventory.ini deploy.yaml
+                        ENDSSH 
                     """
                 }
             }
