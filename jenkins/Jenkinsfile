@@ -10,21 +10,19 @@ pipeline {
     }
 
     stages {
-    stage('Deploy via Ansible') {
-        steps {
-            sshagent (credentials: ['rg12.pem']) {
-                script {
+        stage('Deploy via Ansible') {
+            steps {
+                sshagent (credentials: ['ansible_ssh_key']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no $ANSIBLE_HOST << 'ENDSSH'
+                    ssh -o StrictHostKeyChecking=no \$ANSIBLE_HOST << 'ENDSSH'
                     set -e
-
-                    cd ~/disaster_recovery_project
+                    cd \$PROJECT_DIR
 
                     git fetch --all
                     git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
                     git pull -X theirs origin $(git rev-parse --abbrev-ref HEAD)
 
-                    cd ~/disaster_recovery_project/ansible
+                    cd \$ANSIBLE_DIR
                     ansible-playbook -i inventory.ini deploy.yaml
                     ENDSSH
                     '''
@@ -32,5 +30,4 @@ pipeline {
             }
         }
     }
-}
 }
