@@ -10,9 +10,9 @@ pipeline {
     stages {
         stage('Deploy via Ansible') {
             steps {
-                sshagent(credentials: ['rg12.pem']) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'rg12.pem', keyFileVariable: 'KEYFILE', usernameVariable: 'SSHUSER')]) {
                     sh """
-                        ssh -o StrictHostKeyChecking=no ${env.ANSIBLE_HOST} << 'ENDSSH'
+                        ssh -i \$KEYFILE  ${env.ANSIBLE_HOST} << 'ENDSSH'
                         set -e
                         cd ${env.PROJECT_DIR}
 
