@@ -14,8 +14,7 @@ pipeline {
                     sh """
                         dir
                         chmod 400 ${PEM_FILE}
-                        
-                        
+                        ssh -i ${PEM_FILE} ${ANSIBLE_HOST} 
                     """
                 }
             }
