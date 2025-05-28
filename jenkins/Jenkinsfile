@@ -14,7 +14,7 @@ pipeline {
                     sh """
                         dir
                         chmod 400 ${PEM_FILE}
-                        ssh -i -o StrictHostKeyChecking=no ${PEM_FILE} ${ANSIBLE_HOST} 
+                        ssh -i ${PEM_FILE} -o StrictHostKeyChecking=no  ${ANSIBLE_HOST} 
                     """
                 }
             }
