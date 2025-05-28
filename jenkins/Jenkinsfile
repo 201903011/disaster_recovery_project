@@ -15,7 +15,7 @@ pipeline {
                         dir
                         chmod 400 ${PEM_FILE}
                         
-                        EOF
+                        
                     """
                 }
             }
